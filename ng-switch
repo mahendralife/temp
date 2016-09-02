@@ -1,0 +1,29 @@
+<div ng-controller="MyCtrl">
+  <table style="width:100%">
+    <tr ng-repeat="item in items" ng-switch on="$index % 4">
+      <td ng-switch-when="0">
+
+        {{items[$index]}}
+      </td>
+      <td ng-switch-when="0">
+
+        <span ng-show="items[$index+1]">
+          {{items[$index+1]}}
+        </span>
+      </td>
+      <td ng-switch-when="0">
+
+        <span ng-show="items[$index+2]">
+          {{items[$index+2]}}
+        </span>
+      </td>
+       <td ng-switch-when="0">
+
+        <span >
+          {{items[$index+3]}}
+        </span>
+      </td>
+    </tr>
+  </table>
+</div>
+  $scope.items = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22];
