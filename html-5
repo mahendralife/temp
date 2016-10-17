@@ -1,0 +1,18 @@
+
+var html5BaseUrl   = '/';
+
+var angularHtml5Mode = true; // use `true` to enable html5 mode otherwise use `false`, Don't change other varaibles , Read note 1
+var html5ModeValue = true;
+var hashbang = '';
+
+
+if(angularHtml5Mode){
+
+	html5ModeValue = true;
+	hashbang = '';
+}else{
+	
+	html5ModeValue = false;
+	hashbang = '#/';
+}
+
