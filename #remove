@@ -3,4 +3,3 @@ RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . http://localhost/login-app/
-http://flexsin.org/lab/magazine/magazine-tool/services/upload/vetoria.rar
