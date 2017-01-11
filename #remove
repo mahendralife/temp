@@ -3,3 +3,4 @@ RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . http://localhost/login-app/
+/magazine-tool/services/upload/Victoria_new.zip
