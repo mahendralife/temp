@@ -10,14 +10,15 @@ function coverCtrl($location,$scope,$log,http,$rootScope,filterFilter, $filter,$
   if(isEdit=='true')
   {
       $scope.isEdit=true;
+      //sessionStorage['isOffLoad']=true;
   }
   else
   {
     $scope.isEdit=false;
     console.log("no edit tool");
-    sessionStorage.removeItem('isOffLoad');
-
-    http.clearStorage();
+    
+    // sessionStorage.removeItem('isOffLoad');
+    // http.clearStorage();
 
   }
 
@@ -229,15 +230,22 @@ $scope.changeTemplate= function(type){
   $scope.isCopiesError=false;
   $scope.createPages= function(pages,scroll)
   {
-      var lastpage;
+     
+      
+
+
+
+  var lastpage;
   var backup=http.storageParse('magazine_data');
   if(backup)
   {
   if(backup.hasOwnProperty('pageListBackup'))
   {
     $scope.pageListbackup=backup['pageListBackup'];
+	if($scope.pageList)
+	{
     lastpage=$scope.pageList[$scope.pageList.length-1];
-
+	}
   }
 }
   page=pages;
@@ -259,8 +267,10 @@ if(Object.keys($scope.pageListbackup).length>0)
         }
     }
   $scope.pageList[ $scope.pageList.length-1]=$scope.pageListbackup[$scope.pageListbackup.length-1];
+  if(lastpage){
   lastpage.info['page']=[$scope.pageList.length-1];
   $scope.pageList[ $scope.pageList.length-1]=lastpage;
+  }
 
   http.storage("magazine_data","navList", $scope.navList);
 
@@ -268,6 +278,40 @@ if(Object.keys($scope.pageListbackup).length>0)
   console.log("page:"+ $scope.pageList.length);
 
   }
+
+  // var activePage=$scope.pageList[0].info;
+  //     console.log(activePage)
+  //     if(activePage.isSuccess===true)
+  //     {
+  //       $scope.OpenPage=activePage.page;
+  //       $scope.layouts=activePage.layout;
+  //       $scope.defaultPage(activePage.page);
+  //       $scope.isPageActive=activePage.page[0];
+  //       $scope.menuActive=activePage.page[0];
+
+  //     }
+  //     else
+  //     {
+  //       $scope.OpenPage=[0];
+  //       $scope.pagelayouts=1;
+  //     }
+   
+
+      $scope.formTemplate=false;
+      $scope.noTemplate=false;
+      $scope.OpenPage=[0];
+      $scope.menuActive=0;
+      $scope.pagelayouts=1;
+      $scope.pagelayout1Image=false;
+      $scope.pagelayout2Image=false;
+      
+      angular.forEach($scope.pageList,function(value, key){
+        value.pageActive=false;
+      });
+      //$scope.pageList[0].pageActive=true;
+
+
+
 if(!scroll)
 {
   $timeout(function(){  _j('body,html').animate({scrollTop:0},500);},200)
@@ -808,16 +852,25 @@ $scope.setPageActive=function(layout,index)
     if(layout==2)
     {
       var arr=[];
+      var nofill=[];
       angular.forEach($scope.pageList, function(value,key)
       {
         if(value.isSuccess==true){
           arr.push(value);
         }
+        if(value.isSuccess==false){
+          nofill.push(key);
+        }
+
       });
-
-
-      if(arr.length<$scope.pageList.length-2)
+      
+      var pageLen=nofill.length-1;
+      if(pageLen>=2){
+      
+      if(arr.length<$scope.pageList.length-1)
       {
+
+
       var pageLeft,pageRight;
       if($scope.pageList[index-1]){
             pageLeft =$scope.pageList[index-1].isSuccess;
@@ -856,6 +909,10 @@ $scope.setPageActive=function(layout,index)
         $scope.pageList[$scope.isPageActive].pageActive=true;
         $scope.menuActive=$scope.isPageActive;
       // alert("ok");
+      }
+      }
+      else{
+         http.alert("Page layout not allowed" ,'error-toast');
       }
     }
     else
@@ -1014,15 +1071,15 @@ if($scope.pageList.length === (index+1))
 
 if(success==true) //if data exit on local
     {
+        
       var info=$scope.pageList[index].info;
-
-
-        $scope.OpenPage=info.page;
-        $scope.pagelayouts=info.layout;
-        $scope.layoutDisabled=true;
-        $scope.defaultPage(info.page);
-        console.log($scope.pageList[index]);
-        $scope.isLayoutBackup=undefined;
+      $scope.OpenPage=info.page;
+      $scope.pagelayouts=info.layout;
+      
+      $scope.layoutDisabled=true;
+      $scope.defaultPage(info.page);
+      console.log($scope.pageList[index]);
+      $scope.isLayoutBackup=undefined;
         //check page layout allowed or not
       var allowed=0;
       var pageLeft=$scope.pageList[index-1];
@@ -1072,19 +1129,22 @@ if(success==true) //if data exit on local
         {
         var spaceList=$scope.pageList[index].isSpace;
 
-        pageId=http.getPageId($scope.isPageActive, info.layout,ispace);
-        if($scope.backPage==true){
-          pageId='backPage';
-        }
+          pageId=http.getPageId($scope.isPageActive, info.layout,ispace);
+            
+            if($scope.backPage==true)
+            {
+              pageId=http.getPageIdBack(info.layout,ispace)
+            }
 
         }
         else
         {
 
           pageId=http.getPageId($scope.OpenPage, $scope.pagelayouts);
-          if($scope.backPage==true){
-            pageId='backPage';
-          }
+              if($scope.backPage==true)
+              {
+    			       pageId=http.getPageIdBack(info.layout)
+              }
 
         }
 
@@ -1255,7 +1315,7 @@ $scope.getLayoutImage=function(catgId,id){
 //select category for current pager
 $scope.updateNavalist=function(type,id,x,x1,x2,added)
 {
-    $scope.additionalCost=http.storageParse("price");
+  $scope.additionalCost=http.storageParse("price");
   var flag=false;
   var typeObj=type;
   var id=type.id;
@@ -1547,6 +1607,24 @@ if(result==true)
       $scope.space.push(typeObj);
       $scope.space.push(id);
       $scope.space.push(setSpaceClassName(data));
+      console.log('is Add space');
+
+      var arr=[];
+      angular.forEach(  $scope.pageList, function(value, key){
+        if(value.pageActive==true){
+          arr.push(key);
+          value.pageActive=false;
+        }
+      });
+
+      console.log($scope.OpenPage);
+
+       $scope.OpenPage=[arr[0]];
+      console.log($scope.OpenPage);
+      
+      $scope.pageList[arr[0]].pageActive=true;
+      $scope.pagelayouts=1;
+
     }
     else
     {
@@ -1722,6 +1800,8 @@ $scope.addContent = function(form,data)
   //get selectedCategory
   var category= $scope.magazineInfo.selectedCategory[0].key[$scope.magazineInfo.selectedCategory[0].key.length-1];
 
+console.log($scope.OpenPage);
+
   if(form.$valid)
   {
     //define variables
@@ -1801,15 +1881,16 @@ $scope.addContent = function(form,data)
       if(Object.keys($scope.space).length>0) //if make selection for adds
          {
             key=http.getPageId($scope.isPageActive, pagelayout,$scope.space[2]);
-            if($scope.backPage==true){
-              key='backPage';
+            if($scope.backPage==true)
+            {
+                key=http.getPageIdBack(pagelayout,$scope.space[2]);
             }
          }
          else
          {
             key=http.getPageId($scope.OpenPage, $scope.pagelayouts,$scope.space[2]);
             if($scope.backPage==true){
-              key='backPage';
+              key=http.getPageIdBack(pagelayout,$scope.space[2]);
             }
 
          }
@@ -1966,6 +2047,7 @@ count++;
           // $scope.category_list=http.storageParse("category");
           $scope.selectedTab=4;
           $scope.hightlights_step1=true;
+          $scope.hightlights_step2=false;
       }
       else if(pos!=0)
        {
@@ -2416,8 +2498,7 @@ console.log($scope.pageListbackup.length);
 
   });
 
-console.log(backupPages);
-console.log(pages);
+
   if(backupPages.length>pages.length )
   {
 
@@ -2448,14 +2529,18 @@ console.log(pages);
       });
        $scope.pageListbackup=$scope.pageList;
        http.storage("magazine_data","pageListbackup", $scope.navList);
+       //remove all session data
+   
+
   }
+
 
 }
 $scope.hightlights_form= function(data,form)
 {
 
   $scope.checkPageAndUpdate();
-  return false;
+
   if(form.$valid)
   {
 
@@ -2482,7 +2567,16 @@ $scope.hightlights_form= function(data,form)
             $scope.stepOver["pageHighlight2"]="success";
             http.storage("magazine_data","stepOver", $scope.stepOver);
 
-            location.assign(response.url);
+          //remove session
+          //sessionStorage.removeItem('isOffLoad');
+          http.clearStorage();
+
+      
+          $timeout(function(){
+                sessionStorage.removeItem('magazine_data');
+              location.assign(response.url);
+
+          },700);
             $scope.highlightsisLoading=false;
         }
         else if(response.status==false)
@@ -2677,7 +2771,7 @@ $scope.confirmDeleteData= function(id){
   http.get_data(deleteUserDataAll, data, function(response){
       if(response.status==true)
       {
-          $scope.startApp();
+        $scope.startApp();
          sessionStorage["isOffLoad"]=true;
       }
   });
@@ -2712,21 +2806,25 @@ if(!sessionStorage['isOffLoad'])
     {
       //if existing user coming with unsaved data
       var $data=response.data.data;
+      console.log(isEdit);
       //var confirm=$scope.showConfirm("You have some existing work. click on below one of the button <br> to start a new page or continue form last left.",'Are you Sure?',"No",'Yes ');
-	  if(isEdit=='true'){
-	  var confirm=$scope.showConfirm("You have some unsaved work click below to confirm, <br>  if you click YES delete your last created magazine data or no to load last work undone.",'Are you Sure?',"No",'Yes ');
-	  }else{
-	  var confirm=$scope.showConfirm("You have some unsaved work click below to confirm, <br>  if you click YES delete your last created magazine data or no to load last work undone.",'Are you Sure?',"No",'Yes ');
+	   var confirm;
+    if($scope.isEdit=='true')
+    {
+	   confirm=$scope.showConfirm("You have some unsaved work click below to confirm, <br>  if you click YES delete your last created magazine data or no to load last work undone.",'Are you Sure?',"No",'Yes ');
+	  }
+    else
+    {
+	   confirm=$scope.showConfirm("You have some unsaved work click below to confirm, <br>  if you click YES delete your last created magazine data or no to load last work undone.",'Are you Sure?',"No",'Yes ');
 	  }
 
       $mdDialog.show(confirm).then(function() {
         //if click on continue
-          sessionStorage["isOffLoad"]=true;
-         $scope.setSesstionStartApp($data);
-         http.alertLoader("Please wait while we'r processing your request,<br> it will take less time.</span>");
+      sessionStorage["isOffLoad"]=true;
+      $scope.setSesstionStartApp($data);
+      http.alertLoader("Please wait while we'r processing your request,<br> it will take less time.</span>");
       }, function()
       {
-
         $scope.confirmDeleteData($data.lastInsertedId);
 
       });
@@ -2738,16 +2836,19 @@ else {
     $scope.startApp();
 }
 
+
 //save and exit tool
 $scope.saveExit= function(id,url){
   var btn;
   if(id=="save")
   {
-    btn="Save & Exit";
+  console.log(id);
+    btn="Save & Go to Cart";
+ 
   }
   if(id=="edit")
   {
-    btn="Save & Go to Cart";
+    btn="Save & Exit";
   }
   var message={"title":"Confirm","message":"Are you sure you want to go? <br><small>your work will be saved. </small>"};
   var confirm = $mdDialog.confirm()
@@ -2765,6 +2866,22 @@ $scope.saveExit= function(id,url){
 
           http.clearStorage();
           http.alertLoader("Please wait while we'r processing your request,<br> it will take less time.</span>");
+          
+          if(id=="save")
+          {
+               var user=userInfo;
+        user["lastInsertedId"]=sessionStorage["lastInsertedId"];
+        console.log(user);
+
+      http.get_data(updateCartUrl,user,function(response)
+      {
+      if(response.status==true)
+      {
+          $log.info("data send ");
+      }
+      });
+
+          }
           location.assign(url);
         }
 
