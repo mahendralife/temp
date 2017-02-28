@@ -1,0 +1,45 @@
+$(window).scroll(function(){
+
+	var top=$(window).scrollTop();
+	if(top>=50)
+	{
+		$('.page-scroll').addClass('active');
+
+		$('.page-1').addClass('active');
+
+		var section1=$('.section-1').height();
+		var section2=$('.section-2').height();
+		var section3=$('.section-3').height();
+		var section4=$('.section-4').height();
+		var section5=$('.section-5').height();
+
+		console.log('sec-'+ (section1/2));
+		console.log('top-'+ top);
+
+		
+		if(top >(section2+(section1/2))){
+			$('.page-2').addClass('active');
+		}
+		if(top >((section1+section2)+(section3/2))){
+			$('.page-3').addClass('active');
+		}
+		if(top >((section1+section2+section3) +(section4/2))){
+			$('.page-4').addClass('active');
+		}
+		
+		if(top >((section1+section2+section3 +section4)+(section5 /2))){
+			$('.page-5').addClass('active');
+		}
+		if(top <((section1+section2+section3 +section4)+(section5))){
+			$('.page-5').removeClass('active');
+		}
+
+
+
+	}
+	else
+	{
+		$('.page-scroll').removeClass('active');
+		
+	}
+})
