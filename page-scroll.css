@@ -1,0 +1,63 @@
+.section { height: 500px; border: 1px gray solid; }
+.page-scroll{
+	position: fixed;
+	right:15px;
+	top: 30%;
+	z-index: 2
+
+}
+.page-item img { width: 12px; }
+.page-item { transition: all 1s linear;position: absolute; }
+.page-1{top:0;}
+.page-2{top:25px;}
+.page-3{top:50px;}
+.page-4{top:75px;}
+.page-5{top:100px;}
+
+.page-scroll.active {transition: top .5s linear;}
+
+.page-scroll.active .page-1{top:-50px;}
+.page-scroll.active .page-2{top:0px;}
+.page-scroll.active .page-3{top:50px;}
+.page-scroll.active .page-4{top:100px;}
+.page-scroll.active .page-5{top:150px;}
+
+.page-scroll.active .page-item:before{
+    content: '';
+    top: 15px;
+    position: absolute;
+    height:100%;
+    width: 1px;
+    background-color: #d2cfcf;
+    left: 6px;
+}
+.page-scroll .page-item:after{
+	    transition: top .5s linear;
+}
+
+.page-scroll.active .page-item:after{
+    content: '';
+    bottom: 15px;
+    position: absolute;
+    height:100%;
+    width: 1px;
+    background-color: #d2cfcf;
+    left: 6px;
+
+ 
+}
+
+.page-scroll.active .page-item:first-child:after { 
+	width: 0;
+ }
+ .page-scroll.active .page-item:last-child:before { 
+	width: 0;
+ }
+
+ .page-scroll.active .page-item.active:before{
+    background-color: red;transition: all 2s linear;
+}
+
+ .page-scroll.active .page-item.active:after{
+    background-color: red;transition: all 2s linear;
+}
