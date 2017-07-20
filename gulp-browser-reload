@@ -1,0 +1,208 @@
+const gulp      = require('gulp'),
+    jshint      = require('gulp-jshint'),
+    concat      = require('gulp-concat'),
+    uglify      = require('gulp-uglify'),
+    cleancss    = require('gulp-clean-css'),
+    pump        = require('pump'),
+    babel       = require('gulp-babel'),
+    stylish     = require('jshint-stylish'),
+    browserSync = require('browser-sync'),
+    fs          = require('fs');
+
+exports.frontTask = function(){
+
+const watchFiles =[
+
+    './public/app/*.js',
+    './public/app/*/*.js',
+    './public/app/*/*/*.js',
+    './public/template/*/*.ctrl.js',
+    './public/components/*/*.ctrl.js',
+    './public/components/*/*/*.ctrl.js'
+];
+
+
+
+let appFiles=[
+    //application folder
+    //application config
+    "./public/app/config/env.js",
+     // "./public/app/service-workers.js",
+    "./public/app/config/API_PATH.js",
+    "./public/app/config/config.js",
+    "./public/app/config/theme.js",
+    "./public/app/config/iconSet.ctrl.js",
+    //application route
+    "./public/app/routes/route.js",
+    "./public/app/routes/metaTags.js",
+    "./public/app/routes/routeChange.js",
+    "./public/app/app.js",
+   
+    "./public/app/services/services.js",
+    "./public/app/directives/directive.js",
+
+    //controller
+    "./public/template/*/*.ctrl.js",
+    "./public/components/*/*.ctrl.js",
+    "./public/components/*/*/*.ctrl.js"
+];
+
+/*
+    task for compress all css bowers css
+*/
+gulp.task('vendor:cssmin', () => {
+    gulp.src([
+        //css file path
+        'bower_components/bootstrap/dist/css/bootstrap.min.css',
+        'bower_components/angular-material/angular-material.min.css',
+        'bower_components/owl.carousel/dist/assets/owl.carousel.min.css',
+        'bower_components/angular-material-icons/angular-material-icons.css'
+    ])
+    .pipe(concat('vendor.css'))
+    .pipe(cleancss({compatibility: 'ie8', processImport: false}))
+    .pipe(gulp.dest('./public/assets/dist/css/'));
+});
+
+gulp.task('bundle:cssmin', () => {
+    gulp.src([
+        //css file path
+        './public/assets/css/*.style.css',
+    ])
+    .pipe(concat('bundle.css'))
+    .pipe(cleancss({compatibility: 'ie8', processImport: false}))
+    .pipe(gulp.dest('./public/assets/dist/css/'))
+    .pipe(browserSync.stream())
+});
+
+/*
+    Gulp task for minify vendor js files
+*/
+
+gulp.task('vendor:uglify', (cb) => {
+    pump([
+        gulp.src([
+            'bower_components/angular/angular.min.js',
+            'bower_components/angular-animate/angular-animate.min.js',
+            'bower_components/angular-aria/angular-aria.min.js',
+            'bower_components/angular-messages/angular-messages.min.js',
+            'bower_components/angular-material/angular-material.min.js',
+            'bower_components/angular-ui-router/release/angular-ui-router.min.js',
+            'bower_components/angular-local-storage/dist/angular-local-storage.js',
+            'bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js',
+            'bower_components/angular-material-icons/angular-material-icons.js'
+            
+        ]),
+        concat('vendor.js'),
+        uglify({output:{beautify: false, max_line_len:80000}}),
+        gulp.dest('public/assets/dist/js/')
+    ],cb);
+
+});
+
+
+gulp.task('vendor-jquery:uglify', (cb) => {
+    pump([
+        gulp.src([
+            'bower_components/jquery/dist/jquery.min.js',
+            'bower_components/owl.carousel/dist/owl.carousel.min.js',
+
+        ]),
+        concat('vendor-jquery.js'),
+        uglify({output:{beautify: false, max_line_len:80000}}),
+        gulp.dest('public/assets/dist/js/')
+    ],cb);
+
+});
+
+/*
+minify external Js files for  admin-end
+*/
+gulp.task('bundle:uglify', (cb) => {
+    pump([
+        
+        gulp.src(appFiles),
+        jshint(),
+        babel({  presets: ['es2016']}),
+        concat('bundle.js'),
+        gulp.dest('public/assets/dist/js/'),
+        browserSync.stream(),
+    ],cb);
+
+});
+
+gulp.task('bundle-min:uglify', (cb) => {
+    pump([
+        
+        gulp.src(appFiles),
+        jshint(),
+        babel({  presets: ['es2016']}),
+        concat('bundle.js'),
+        uglify({output:{beautify: false, max_line_len:50000}}),
+        gulp.dest('public/assets/dist/js/')
+    ],cb);
+
+});
+
+/*
+gulp build for vendor library 
+*/
+
+gulp.task('app-build',[            
+    'vendor:cssmin',
+    'vendor-jquery:uglify',
+    'vendor:uglify',
+    'bundle-min:uglify'
+]);
+
+/*
+    gulp default task
+*/
+
+gulp.task('app', [
+      'bundle:uglify',
+      'bundle:cssmin',
+      'watch:front'
+
+], function() {
+    console.log("gulp all tasks finished");
+});
+
+/*
+    gulp watch automatically build files when changes are done js or css
+*/
+
+gulp.task('jshint-app',['bundle:uglify'],function(){
+
+     gulp.src(appFiles) 
+        .pipe(jshint())
+        .pipe(jshint.reporter(stylish));
+ 
+});
+
+gulp.task('watch:front',function(){
+
+    gulp.watch('./public/assets/css/*.style.css', ['bundle:cssmin'], 
+        function() {
+        console.log("gulp all tasks finished");
+    });
+
+     gulp.watch(watchFiles, 
+        ['bundle:uglify','jshint-app'], 
+        function() {
+        console.log("gulp all tasks finished");
+    });
+
+});
+
+gulp.task('browserReload', ['watch:front'], function(){
+
+    browserSync.init({
+        
+        server:{
+            baseDir:'./public/'
+        },
+        port:8081
+    })
+});
+
+};
