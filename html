@@ -1,0 +1,726 @@
+<form  novalidate [formGroup] ="form" >
+
+<div class="inner-page">
+    <div class="container">
+
+        <div class="main-heading">
+            <h1>Debt Consolidation  </h1>
+            <p>We shop the most competitive brokers, lenders and banks in Canada to bring you today's lowest interest rates, free of charge! Our Canadian comparison charts list current rates and are updated regularly throughout the day. To compare a certain category, click "Compare all rates" for more details.</p>
+        </div>
+
+        <div class="debt-consolidation-table">
+
+            <table>
+                <tr>
+                    <th style="width: 25%">Type</th>
+                    <th>Debt outstanding</th>
+                    <th>Annual interest</th>
+                    <th>Minimum monthly payment</th>
+                </tr>
+               
+
+      
+        <tr  class="debt-con-tabe-box-1" >
+            <td colspan="4">
+               <div *ngIf="form.controls.itemRows" formArrayName="itemRows">
+                     
+                     <table style="width: 100%">
+                         <tr  *ngFor="let itemrow of form.controls.itemRows.controls; let i=index"  [formGroupName]="i">
+                        <td>
+                                <div class="calulator-table-select">
+                                    <mat-form-field class="select-box">
+                                        <mat-select formControlName="type" placeholder="Please Select">
+                                            <mat-option *ngFor="let type  of types" [value]="type">
+                                                {{ type }}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="debt-table-input">
+                                    <mat-form-field 
+                                        class="example-full-width  has-currency">
+                                        <!--  <span class="currency" 
+                                                           *ngIf="form.controls.bebt_outstanding.value">$</span> -->
+                                        <input (keyup)= "calculate_deb()" 
+                                        formControlName="debt_outstanding" type="number" min="1" matInput placeholder="Debt outstanding">
+
+                                    </mat-form-field>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="debt-table-input">
+                                    <mat-form-field class="example-full-width  has-currency">
+
+                                        <input  
+                                        formControlName="annual_interest"  
+                                        
+                                        type="number" min="1" matInput placeholder="Annual Interest">
+
+                                    </mat-form-field>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="debt-table-input">
+                                    <mat-form-field class="example-full-width  has-currency">
+
+                                    <input (keyup)= "calculate_deb()"  matInput formControlName="monthly_payment" type="number" min="1" placeholder="Monthly payment">
+
+                                    </mat-form-field>
+
+                                </div>
+                                <span class="per-month-text"> per month</span>
+
+                                <button type="button" class="debt-table-corss-btn" 
+                                        (click)="deleteRow()">
+                                    <img src="assets/images/cross-icon.svg">
+                                </button>
+                            </td>
+                         </tr>
+                     </table>
+                 </div> 
+            </td>
+
+
+        </tr>
+
+                
+<tr>
+    <td colspan="4" >
+        <button mat-button type="button" (click)="addNewRow()" color="primary">
+          <mat-icon>add</mat-icon>  Add a new debt
+        </button>                        
+    </td>
+</tr>
+<tr>
+    <td  style="width: 25%">
+        <h2> Total </h2>
+    </td>
+    <td colspan="3">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>${{ total.debt_outstanding || 0}}</h3>
+            </div>
+            <div class="col-sm-6">
+                  <h3>${{ total.total_payment || 0}}</h3>
+            </div>
+
+        </div>
+    </td>
+</tr>
+
+
+</table>
+
+        </div>
+      
+
+        <div class="refinance-section">
+
+
+<div class="refine-sec-heading">Maximum mortgage refinance value</div>
+
+ <div class="row">
+        <div class="col-sm-6">
+            <div class="refinance-box refinance-box-1">
+
+                <div class="max-mort-num">1</div>
+                <p>What is the current value of your home?</p>
+                <mat-form-field class="example-full-width min-320 has-currency">
+                    <span class="currency" *ngIf="form.controls.current_value.value">$</span>
+                    <input 
+                    matInput  
+                    required
+                    (keyup)="calculateResult()" 
+                    formControlName="current_value" 
+                    matInput placeholder="Enter the current value of your home">
+
+                    <mat-error *ngIf="form.controls.current_value.errors">
+                        <span *ngIf="form.controls.current_value.errors.required">Enter current value of your home you're interested.</span>
+                        <span *ngIf="form.controls.current_value.errors.pattern">Enter valid amount</span>
+                    </mat-error>
+                </mat-form-field>
+
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="refinance-box  refinance-box-2">
+                <div class="max-mort-num">2</div>
+
+                <p> What is the remaining balance on your mortgage?</p>
+                 <mat-form-field class="example-full-width min-320 has-currency">
+                    <span class="currency" *ngIf="form.controls.remaining_balance.value">$</span>
+                    <input 
+                    matInput  
+                    required
+                    (keyup)="calculateResult()" 
+                    formControlName="remaining_balance" 
+                    matInput placeholder="Enter the remaining balance on your mortgage">
+
+                    <mat-error *ngIf="form.controls.remaining_balance.errors">
+                        <span *ngIf="form.controls.remaining_balance.errors.required">Enter the price of the home you're interested.</span>
+                        <span *ngIf="form.controls.remaining_balance.errors.pattern">Enter valid amount</span>
+                    </mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+
+    </div>
+
+
+<div class="paper calcWork">
+    <h2 class="med">Determining available equity</h2>
+    <div class="calcSet">
+        <span class="bracketOpen">(</span>
+        <div class="valuePair">
+            <span class="value" >${{result.current_value || 0}}
+            </span>
+            <span class="valueLabel">current home value</span>
+        </div>
+        <span class="operator">x</span>
+        <div class="valuePair">
+            <span class="value">80%</span>
+            <span class="valueLabel">maximum loan to value ratio</span>
+        </div>
+        <span class="bracketClose">)</span>
+
+        <span class="operator">-</span>
+
+        <div class="valuePair">
+            <span class="value" >
+                ${{result.remaining_balance || 0}}
+            </span>
+            <span class="valueLabel">
+                current mortgage                        </span>
+        </div>
+
+        <span class="operator">=</span>
+
+        <div class="valuePair highlight">
+            <span class="value" >${{result.total}}</span>
+            <span class="valueLabel">available equity</span>
+        </div>
+    </div><!-- /.calcSet -->
+</div>
+
+
+
+
+ <div class="row">
+                <div class="col-sm-12">
+                    <div class="refinance-box  refinance-box-1">
+                        <div class="max-mort-num">3</div>
+                        <p>How much equity (cash) do you want to access? </p>
+                        <div class="range-slider-box">
+                          <ion-range-slider 
+                                #amortization_period
+                                [min]="1"
+                                  max="{{result.total}}"
+                                  from="1"
+                                  from_min="0"
+                                  from_max="{{result.total}}"
+                                  from_shadow="true"
+                                  to="0"
+                                  to_min="0"
+                                  to_max="35"
+                                  to_shadow="true"
+                                  grid="false"
+                                  grid_num="10"
+                                  postfix=" $"
+                                  decorate_both="false"
+                          
+                              (onChange)="equity_cash_change($event)"
+                             >
+                            </ion-range-slider>
+                        </div>
+                         
+
+                    </div>
+                </div>
+
+                 
+
+            </div>
+
+
+<div class="paper calcWork">
+                <h2 class="med">Your new mortgage amount</h2>
+                <div class="calcSet">
+                     
+
+
+                    <div class="valuePair">
+                        <span class="value" data-bind="text: principal.currency(0, '?')"> ${{result.remaining_balance || 0}}</span>
+                        <span class="valueLabel">
+                            current mortgage                        </span>
+                    </div>
+
+
+                    <span class="operator">+</span>
+
+                    <div class="valuePair">
+                        <span class="value" data-bind="text: principal.currency(0, '?')">${{equity_cash || 0}}</span>
+                        <span class="valueLabel">
+                            additional equity
+                        </span>
+                    </div>
+
+                    <span class="operator">=</span>
+
+                    <div class="valuePair highlight">
+                        <span class="value" data-bind="css: {negative: availableEquity() < 0},
+                            text: availableEquity.currency(0, '?')">
+                            ${{(result.remaining_balance + equity_cash ) || 0}}
+                            </span>
+                        <span class="valueLabel">new mortgage</span>
+                    </div>
+                </div><!-- /.calcSet -->
+            </div>
+
+
+
+
+            <div class="refine-sec-heading">Select your new mortgage rate</div>
+<div class="refinance-section">
+
+
+  <div class="row">
+    <div class="col-sm-6">
+      <div class="row">
+        <div [ngClass]="{'col-sm-6':form.controls.rateType.value=='fixed' ,'col-sm-12': form.controls.rateType.value=='variable'}">
+
+          <div class="refinance-box refinance-box-1">
+            <p>When did your current mortgage start?</p>
+
+            <mat-form-field class="select-box" (click)="picker.open()">
+              <input matInput [max]="currentDate" [matDatepicker]="picker" placeholder="Choose a date">
+              <mat-datepicker touchUi="true" #picker></mat-datepicker>
+
+            </mat-form-field>
+
+          </div>
+
+        </div>
+
+        <div class="col-sm-6" *ngIf="form.controls.rateType.value=='fixed'">
+
+          <div class="refinance-box  refinance-box-2">
+            <p>What was your mortgage rate at that time ?</p>
+
+            <mat-form-field class="example-full-width has-currency">
+              <span class="currency" *ngIf="form.controls.mortgage_balance.value">$</span>
+
+              <input matInput maxlength="30" required (keyup)="calculateResult()" formControlName="mortgage_old_rate" maxlength="30" placeholder="Enter Mortgage rate">
+
+              <mat-error class="text-right" *ngIf="form.controls.mortgage_old_rate.errors">
+                <span *ngIf="form.controls.mortgage_old_rate.errors.required">
+                  Enter mortgage rate
+                </span>
+                <span *ngIf="form.controls.mortgage_old_rate.errors.pattern"> Enter valid amount </span>
+
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-sm-6">
+      <div class="refinance-box  refinance-box-2">
+
+        <p>What is your remaining mortgage balance?</p>
+        <mat-form-field class="example-full-width min-320 has-currency">
+          <span class="currency" *ngIf="form.controls.mortgage_balance.value">$</span>
+          <input matInput maxlength="30" required (keyup)="calculateResult()" formControlName="mortgage_balance" matInput maxlength="30"
+            placeholder="Enter remaining mortgage balance">
+
+          <mat-error class="text-right" *ngIf="form.controls.mortgage_balance.errors">
+            <span *ngIf="form.controls.mortgage_balance.errors.required">
+              Enter remaining mortgage balance
+            </span>
+            <span *ngIf="form.controls.mortgage_balance.errors.pattern">Enter valid amount</span>
+          </mat-error>
+        </mat-form-field>
+        <mat-checkbox (change)="disabledInput()" class="checkbox-small push-top" formControlName="estimate_checked">
+          <small>
+            I don't know this, help me estimate.
+          </small>
+        </mat-checkbox>
+
+      </div>
+    </div>
+
+  </div>
+  <div>
+
+
+
+    <div class="row" *ngIf="form.value.estimate_checked">
+
+      <div class="col-sm-6">
+
+        <div class="refinance-box  refinance-box-1">
+
+          <p> What is your current mortgage payment? </p>
+
+          <mat-form-field class="example-full-width min-320 has-currency">
+            <span class="currency" *ngIf="form.controls.current_mortgage_balance.value">$</span>
+
+            <input matInput maxlength="30" required (keyup)="calculateResult()" formControlName="current_mortgage_balance" matInput maxlength="30"
+              placeholder="Enter the current mortgage payment">
+
+            <mat-error class="text-right" *ngIf="form.controls.current_mortgage_balance.errors">
+
+              <span *ngIf="form.controls.current_mortgage_balance.errors.required">
+                Enter remaining mortgage balance
+              </span>
+              <span *ngIf="form.controls.current_mortgage_balance.errors.pattern">Enter valid amount</span>
+            </mat-error>
+          </mat-form-field>
+          <mat-checkbox formControlName="mortgage_payment_help" (change)="disabledInputs()" class="checkbox-small push-top">
+            <small>
+              I don't know this, help me estimate.</small>
+          </mat-checkbox>
+
+        </div>
+      </div>
+      <div class="col-sm-6">
+
+        <div class="refinance-box  refinance-box-2">
+
+          <p>How often do you make mortgage payments? </p>
+          <div class="calulator-table-select">
+
+            <mat-form-field>
+
+              <mat-select (selectionChange)="updateFequency()" formControlName="mortgage_payments" required placeholder="Please Select">
+
+                <mat-option value="weekly">
+                  Weekly
+                </mat-option>
+                <mat-option value="semi-monthly">
+                  Semi-monthly
+                </mat-option>
+                <mat-option value="monthly">
+                  Monthly
+                </mat-option>
+                <mat-option value="yearly">
+                  Yearly
+                </mat-option>
+
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-6" *ngIf="form.value.estimate_checked==true">
+
+        <div class="refinance-box  refinance-box-1">
+
+          <p> What was your original mortgage balance? </p>
+
+          <mat-form-field class="example-full-width min-320 has-currency">
+            <span class="currency" *ngIf="form.controls.original_mortgage_balance.value">$</span>
+
+            <input matInput maxlength="30" required (keyup)="calculateResult()" formControlName="original_mortgage_balance" matInput
+              maxlength="30" placeholder="Enter the price of the  mortgage balance">
+
+            <mat-error *ngIf="form.controls.original_mortgage_balance.errors">
+
+              <span *ngIf="form.controls.original_mortgage_balance.errors.required">
+                Enter remaining mortgage balance
+              </span>
+              <span *ngIf="form.controls.original_mortgage_balance.errors.pattern">Enter valid amount</span>
+            </mat-error>
+          </mat-form-field>
+
+        </div>
+      </div>
+      <div class="col-sm-6" *ngIf="form.value.mortgage_payment_help ==true">
+
+        <div class="refinance-box  refinance-box-2">
+
+          <p>Amortization period of your current mortgage? </p>
+
+          <div class="range-slider-box">
+            <ion-range-slider #amortization_period [min]="1" max="10" from="5" from_min="1" from_max="10" from_shadow="true" to="0" to_min="1"
+              to_max="10" to_shadow="true" grid="true" grid_num="10" postfix=" Yrs" decorate_both="false" (onChange)="amortization_period_change($event)">
+            </ion-range-slider>
+
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+
+
+
+  </div>
+  <div class="row">
+
+    <div class="col-sm-6">
+      <div class="refinance-box  refinance-box-1">
+
+        <p>Who is your current mortgage provider? </p>
+        <div class="calulator-table-select">
+          <mat-form-field class="select-box">
+            <mat-select (selectionChange)="changeProvider()" placeholder="Please Select" formControlName="providers">
+
+              <mat-option *ngFor="let provider of providers" [value]="provider">
+                <img style="max-height:30px" src="{{provider.company_logo}}"> {{ provider.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <span class="tool-tip">
+          <div class="tool-tip-content">
+            <h6>Heading</h6>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore
+              magna aliqua. </p>
+            <img src="assets/images/tool-tip-top.png">
+          </div>
+          <img src="assets/images/tool-tip-icon.svg">
+        </span>
+
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="refinance-box refinance-box-2">
+
+        <p>What was the original term of your mortgage? </p>
+
+        <div class="range-slider-box">
+          <ion-range-slider #original_term [min]="1" max="10" from="1" from_min="5" from_max="10" from_shadow="true" to="0" to_min="5"
+            to_max="10" to_shadow="true" grid="true" grid_num="10" postfix=" Yrs" decorate_both="false" (onChange)="original_term_change($event)">
+          </ion-range-slider>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="row">
+    <div class="col-sm-6">
+      <div class="refinance-box refinance-box-1">
+
+        <p>What type of rate is it?</p>
+
+        <div class="calcultor-page-radion-btn">
+          <mat-radio-group formControlName="rateType" (change)="calculateResult()">
+            <mat-radio-button value="variable">Variable Rate</mat-radio-button>
+            <mat-radio-button value="fixed">Fixed Equity</mat-radio-button>
+          </mat-radio-group>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="refinance-box refinance-box-2">
+
+        <p>
+          What is your existing mortgage rate?
+        </p>
+
+        <mat-form-field class="has-currency percentage-field field-border">
+          <input matInput maxlength="5" required (keyup)="calculateResult()" placeholder="Enter your existing mortgage rate" formControlName="existing_mortgage_rate">
+
+          <span *ngIf="form.controls.existing_mortgage_rate.value" class="percentage">%</span>
+
+          <mat-error *ngIf="form.controls.existing_mortgage_rate.errors">
+            <span *ngIf="form.controls.existing_mortgage_rate.errors.required"> Enter existing mortgage rate
+            </span>
+          </mat-error>
+        </mat-form-field>
+
+      </div>
+    </div>
+
+  </div>
+
+
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="refinance-box  refinance-box-1">
+
+        <p>Which province are you located in? </p>
+        <div class="calulator-table-select">
+          <mat-form-field class="autoComplete">
+
+            <mat-icon class="fixed-left">search</mat-icon>
+
+            <button mat-icon-button *ngIf="!isProcessing && form.controls.states.value" class="btn-right" (click)="clear(form.controls.states)">
+              <mat-icon>close</mat-icon>
+            </button>
+
+            <mat-progress-spinner class="input-loader" *ngIf="isProcessing" [color]="'primary'" [diameter]="20" [mode]="'indeterminate'">
+            </mat-progress-spinner>
+            <input matInput maxlength="30" formControlName="states" placeholder="Enter your location (eg. Saint Alexandre)" aria-label="State"
+              [matAutocomplete]="auto">
+
+            <mat-autocomplete (optionSelected)="selectedLocation()" #auto="matAutocomplete">
+
+              <mat-option *ngFor="let state of stateList" [value]="state">
+
+                <small>{{ state.name }}</small>
+                <small class="pull-right">
+                  {{state.province.full_name}} ({{state.province.code}})
+                </small>
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="input-box" *ngIf="form.controls.estimate_checked.value">
+
+    <p class="col-sm-12">Based on your inputs we've estimated your mortgage payment and remaining mortgage. Adjust these amounts if you've taken
+      advantage of your prepayment options.</p>
+
+    <div class="row">
+      <div class="col-sm-6">
+        <div class="refinance-box  refinance-box-1">
+
+          <p>Your current mortgage payment: </p>
+
+          <mat-form-field class="example-full-width min-320 has-currency">
+            <span class="currency" *ngIf="form.controls.current_mortgage_payment.value">$</span>
+
+            <input matInput maxlength="30" required readonly (keyup)="calculateResult()" formControlName="current_mortgage_payment" matInput
+              maxlength="30" placeholder="Enter the price of the home">
+
+            <mat-error *ngIf="form.controls.current_mortgage_payment.errors">
+
+              <span *ngIf="form.controls.current_mortgage_payment.errors.required">
+                Enter remaining mortgage balance
+              </span>
+              <span *ngIf="form.controls.current_mortgage_payment.errors.pattern">Enter valid amount</span>
+            </mat-error>
+          </mat-form-field>
+
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="refinance-box  refinance-box-1">
+
+          <p>Your remaining mortgage balance: </p>
+
+          <mat-form-field class="example-full-width min-320 has-currency">
+            <span class="currency" *ngIf="form.controls.remaining_mortgage_balance.value">$</span>
+
+            <input matInput maxlength="30" required readonly (keyup)="calculateResult()" formControlName="remaining_mortgage_balance"
+              matInput maxlength="30" placeholder="Enter your remaining mortgage balance">
+
+            <mat-error *ngIf="form.controls.remaining_mortgage_balance.errors">
+
+              <span *ngIf="form.controls.remaining_mortgage_balance.errors.required">
+                Enter your remaining mortgage balance
+              </span>
+              <span *ngIf="form.controls.remaining_mortgage_balance.errors.pattern">Enter valid amount</span>
+            </mat-error>
+          </mat-form-field>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+ 
+
+        </div>
+<div class="result">
+        <table class="data">
+   <thead>
+      <tr>
+         <th></th>
+         <th>Status Quo</th>
+         <th>DEBT CONSOLIDATION</th>
+      </tr>
+   </thead>
+   <tbody>
+      <tr>
+         <th>Non-mortgage debt</th>
+         <td > ${{total.debt_outstanding || 0}}</td>
+         <td>  ${{total.debt_outstanding || 0}}</td>
+      </tr>
+      <tr>
+         <th>One time refinance penalty</th>
+         <td>  </td>
+         <td> ${{refinance_penalty || 0 }} </td>
+      </tr>
+      <tr>
+         <th> Mortgage debt </th>
+         <td > ${{result.remaining_balance || 0}}</td>
+         <td >${{(result.remaining_balance + equity_cash ) || 0}}</td>
+      </tr>
+
+      <tr class="darkened">
+         <th>Total debt</th>
+         <td > ${{(total.debt_outstanding  + result.remaining_balance) || 0 }} </td>
+         <td> ${{totalDebt || 0 }} </td>
+
+      </tr>
+      <tr>
+         <td colspan="3"></td>
+      </tr>
+      <!-- <tr>
+         <th>Weighted average interest</th>
+         <td >7.83 %</td>
+         <td ></td>
+      </tr>
+      <tr class="darkened">
+         <th>Payment</th>
+         <td >$110</td>
+         <td >$0</td>
+      </tr> -->
+      <tr>
+         <th>Payback period</th>
+         <td> 
+           <span *ngIf="this.term"> {{ this.term}} years </span></td>
+         <td ></td>
+      </tr>
+   </tbody>
+</table>
+   
+    <div class="footer-info">
+    <div class="row">
+        <div class="col-sm-8">
+            <h2> You can access up to ${{result.total || 0}} by refinancing.</h2>
+        </div>
+        
+        <div class="col-sm-4">
+
+            <button type="button" class="btn" >Speak to a broker now </button>
+        </div>
+        </div>
+    </div>
+  
+</div>
+<app-calculator-result-reality></app-calculator-result-reality>
+
+    </div>
+</div>
+</form>
